@@ -1,0 +1,537 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ImunoPlay — Aprenda Imunologia</title>
+  <meta name="theme-color" content="#0f1221" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" href="icons/icon.svg" type="image/svg+xml" />
+  <link rel="apple-touch-icon" href="icons/icon-maskable.svg" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+<header class="topbar" role="banner">
+  <h1>ImunoPlay</h1>
+  <div class="toggles">
+    <button id="contrastBtn" class="ghost" aria-pressed="false" title="Alternar alto contraste">Alto contraste</button>
+    <button id="fontsizeBtn" class="ghost" aria-pressed="false" title="Alternar fonte grande">Fonte grande</button>
+    <button id="resetBtn" class="ghost" title="Resetar progresso">Reset</button>
+  </div>
+</header>
+
+<nav class="tabs" role="tablist" aria-label="Módulos">
+  <button class="tab active" role="tab" aria-selected="true" data-target="dash">Mapa</button>
+  <button class="tab" role="tab" data-target="cards">Flashcards</button>
+  <button class="tab" role="tab" data-target="quiz">Quiz</button>
+  <button class="tab" role="tab" data-target="drag">Arraste &amp; Solte</button>
+  <button class="tab" role="tab" data-target="mhc">Simulador MHC</button>
+  <button class="tab" role="tab" data-target="hyper">Hipersensibilidade</button>
+  <button class="tab" role="tab" data-target="vac">Vacinas</button>
+  <button class="tab" role="tab" data-target="tol">Tolerância</button>
+  <button class="tab" role="tab" data-target="auto">Autoimunidade</button>
+  <button class="tab" role="tab" data-target="tx">Transplantes</button>
+  <button class="tab" role="tab" data-target="tumor">Imuno dos Tumores</button>
+  <button class="tab" role="tab" data-target="comp">Complemento</button>
+<button class="tab" role="tab" data-target="cyto">Citocinas/Perfis Th</button>
+<button class="tab" role="tab" data-target="tact">Ativação de Linfócito T</button>
+<button class="tab" role="tab" data-target="pid">Imunodeficiências</button>
+<button class="tab" role="tab" data-target="drugs">Imunossupressores</button>   
+</nav>
+
+<main id="views">
+  <!-- Dashboard -->
+  <section id="dash" class="view active" role="tabpanel" aria-labelledby="Mapa">
+    <div class="grid two">
+      <div class="card">
+        <h2>Seu progresso</h2>
+        <div class="progress">
+          <div id="progressBar" class="bar" style="width:0%"></div>
+        </div>
+        <p id="progressText">0% concluído</p>
+        <p class="muted">O progresso é salvo automaticamente neste navegador.</p>
+      </div>
+      <div class="card">
+        <h2>Como usar</h2>
+        <ul class="howto">
+          <li>Revise com <b>Flashcards</b> (memória ativa).</li>
+          <li>Teste com o <b>Quiz</b> e veja explicações.</li>
+          <li>Classifique no <b>Arraste &amp; Solte</b> (inata × adaptativa).</li>
+          <li>Domine <b>MHC I × II</b> no simulador.</li>
+          <li>Mapeie <b>Hipersensibilidade</b>, <b>Vacinas</b>, <b>Tolerância</b>, <b>Autoimunidade</b> e <b>Transplantes</b>.</li>
+          <li>Feche com <b>Tumores</b> (alvos e resposta imune).</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Flashcards -->
+  <section id="cards" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Flashcards</h2>
+      <div class="pill">Cartão <span id="fcIndex">1</span>/<span id="fcTotal">0</span></div>
+    </div>
+    <div class="card big" id="flashcard" tabindex="0" aria-live="polite">
+      <div class="front" id="fcFront">Carregando…</div>
+      <div class="back" id="fcBack"></div>
+    </div>
+    <div class="actions">
+      <button id="showBack">Mostrar resposta (Espaço)</button>
+      <button id="knowBtn" class="success">Acertei</button>
+      <button id="dontBtn" class="danger">Errei</button>
+    </div>
+  </section>
+
+  <!-- Quiz -->
+  <section id="quiz" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Quiz</h2>
+      <div class="pill">Questão <span id="qNum">1</span>/<span id="qTotal">0</span></div>
+    </div>
+    <div class="card">
+      <h3 id="qText">Carregando…</h3>
+      <div id="qOptions" class="options" role="group" aria-label="Alternativas"></div>
+      <div id="qFeedback" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button id="nextQ" class="ghost">Próxima</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Drag & Drop Inata vs Adaptativa -->
+  <section id="drag" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Inata × Adaptativa</h2>
+      <div class="pill"><span id="ddScore">0</span> / <span id="ddTotal">0</span></div>
+    </div>
+    <div class="grid three">
+      <div class="card">
+        <h3>Arraste os itens</h3>
+        <ul id="ddItems" class="chips" aria-label="Itens para classificar"></ul>
+      </div>
+      <div class="card droptarget" data-bucket="inata" tabindex="0" aria-dropeffect="move">
+        <h3>Inata</h3>
+        <ul class="bucket" id="bucketInata"></ul>
+      </div>
+      <div class="card droptarget" data-bucket="adaptativa" tabindex="0" aria-dropeffect="move">
+        <h3>Adaptativa</h3>
+        <ul class="bucket" id="bucketAdapt"></ul>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="ddCheck">Conferir</button>
+      <button id="ddReset" class="ghost">Reiniciar</button>
+    </div>
+  </section>
+
+  <!-- MHC Simulator -->
+  <section id="mhc" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Simulador MHC I × II</h2>
+      <div class="pill"><span id="mhcScore">0</span> / <span id="mhcTotal">0</span></div>
+    </div>
+    <div class="grid three">
+      <div class="card">
+        <h3>Arraste afirmações</h3>
+        <ul id="mhcItems" class="chips" aria-label="Afirmações sobre MHC"></ul>
+      </div>
+      <div class="card droptarget" data-bucket="I" tabindex="0">
+        <h3>MHC I</h3>
+        <ul class="bucket" id="bucketI"></ul>
+      </div>
+      <div class="card droptarget" data-bucket="II" tabindex="0">
+        <h3>MHC II</h3>
+        <ul class="bucket" id="bucketII"></ul>
+      </div>
+    </div>
+    <div class="actions">
+      <button id="mhcCheck">Conferir</button>
+      <button id="mhcReset" class="ghost">Reiniciar</button>
+    </div>
+  </section>
+
+  <!-- Hipersensibilidade -->
+  <section id="hyper" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Hipersensibilidade I–IV</h2>
+      <div class="pill">Cenário <span id="hsNum">1</span>/<span id="hsTotal">0</span></div>
+    </div>
+    <div class="card">
+      <h3 id="hsCase">Carregando…</h3>
+      <div class="options" id="hsOptions" role="group" aria-label="Tipos de hipersensibilidade"></div>
+      <div id="hsFeedback" class="feedback" aria-live="polite"></div>
+      <div class="actions">
+        <button id="hsNext" class="ghost">Próximo</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- Vacinas -->
+  <section id="vac" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Vacinas</h2>
+      <div class="pill"><span id="vacScore">0</span> / <span id="vacTotal">0</span></div>
+    </div>
+
+    <div class="grid" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+      <div class="card">
+        <h3>Classifique os exemplos</h3>
+        <ul id="vacItems" class="chips" aria-label="Vacinas para classificar"></ul>
+      </div>
+
+      <div class="card droptarget" data-bucket="aten" tabindex="0">
+        <h3>Vivas atenuadas</h3>
+        <ul class="bucket" id="bucketAten"></ul>
+      </div>
+
+      <div class="card droptarget" data-bucket="inativ" tabindex="0">
+        <h3>Inativadas</h3>
+        <ul class="bucket" id="bucketInativ"></ul>
+      </div>
+
+      <div class="card droptarget" data-bucket="sub" tabindex="0">
+        <h3>Subunidade / Toxoide / Conjugada</h3>
+        <ul class="bucket" id="bucketSub"></ul>
+      </div>
+
+      <div class="card droptarget" data-bucket="mrna" tabindex="0">
+        <h3>mRNA</h3>
+        <ul class="bucket" id="bucketMrna"></ul>
+      </div>
+
+      <div class="card droptarget" data-bucket="vetor" tabindex="0">
+        <h3>Vetor viral</h3>
+        <ul class="bucket" id="bucketVetor"></ul>
+      </div>
+
+      <div class="card droptarget" data-bucket="vlp" tabindex="0">
+        <h3>VLP</h3>
+        <ul class="bucket" id="bucketVlp"></ul>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="vacCheck">Conferir</button>
+      <button id="vacReset" class="ghost">Reiniciar</button>
+    </div>
+
+    <div class="card" style="margin-top:12px">
+      <h3>Simulador de resposta humoral (titulação)</h3>
+      <p class="muted">Dose 1 faz priming; reforço ↑ títulos e afinidade (adjuvante intensifica).</p>
+      <div class="actions">
+        <button id="dose1">Aplicar dose 1</button>
+        <button id="dose2" class="success">Aplicar reforço</button>
+        <label style="display:inline-flex; align-items:center; gap:6px;">
+          <input type="checkbox" id="adjuvante" />
+          Usar adjuvante
+        </label>
+      </div>
+      <div class="progress big" style="margin-top:10px">
+        <div id="vacTiter" class="bar" style="width:0%"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- Tolerância -->
+  <section id="tol" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Tolerância Imunológica</h2>
+      <div class="pill">Q <span id="tolNum">1</span>/<span id="tolTotal">0</span></div>
+      <div class="pill">Acertos <span id="tolScore">0</span></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3 id="tolCase">Carregando…</h3>
+        <div id="tolOptions" class="options" role="group" aria-label="Mecanismo (central ou periférica)"></div>
+        <div id="tolFeedback" class="feedback" aria-live="polite"></div>
+        <div class="actions">
+          <button id="tolNext" class="ghost">Próxima</button>
+          <button id="tolAnim">Animar mecanismo</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Mapa de mecanismos</h3>
+        <ul id="tolFlow" class="howto">
+          <li data-step="central1">Seleção negativa (timo)</li>
+          <li data-step="central2">Edição de receptor (LB na medula óssea)</li>
+          <li data-step="central3">Tregs naturais (FOXP3) no timo</li>
+          <li data-step="peri1">Anergia: sinal 1 sem coestímulo (CD28–B7)</li>
+          <li data-step="peri2">Supressão por Tregs (IL-10, TGF-β, CTLA-4)</li>
+          <li data-step="peri3">Apoptose/Fas–FasL (deleção periférica)</li>
+          <li data-step="peri4">Checkpoints PD-1/PD-L1</li>
+          <li data-step="peri5">Ignorância imunológica (sítios privilegiados)</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- Autoimunidade -->
+  <section id="auto" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Autoimunidade</h2>
+      <div class="pill"><span id="autoScore">0</span> / <span id="autoTotal">0</span></div>
+    </div>
+
+    <div class="grid three">
+      <div class="card">
+        <h3>Classifique as doenças</h3>
+        <ul id="autoItems" class="chips" aria-label="Autoimunes para classificar"></ul>
+      </div>
+      <div class="card droptarget" data-bucket="orgao" tabindex="0">
+        <h3>Órgão-específicas</h3>
+        <ul class="bucket" id="bucketOrgao"></ul>
+      </div>
+      <div class="card droptarget" data-bucket="sist" tabindex="0">
+        <h3>Sistêmicas</h3>
+        <ul class="bucket" id="bucketSist"></ul>
+      </div>
+    </div>
+
+    <div class="actions">
+      <button id="autoCheck">Conferir</button>
+      <button id="autoReset" class="ghost">Reiniciar</button>
+    </div>
+
+    <div class="card">
+      <h3>Pistas rápidas (HLA/autoanticorpos)</h3>
+      <ul class="howto">
+        <li><b>DM1</b>: HLA-DR3/DR4; anti-GAD.</li>
+        <li><b>Graves</b>: anti-TSH-R (estimula); <b>Hashimoto</b>: anti-TPO/anti-Tg (destrói).</li>
+        <li><b>Miastenia</b>: anti-AChR; <b>AR</b>: FR e anti-CCP.</li>
+        <li><b>LES</b>: ANA, anti-dsDNA, anti-Sm; <b>Sjögren</b>: anti-SSA/SSB.</li>
+      </ul>
+    </div>
+  </section>
+
+  <!-- Transplantes -->
+  <section id="tx" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Transplantes</h2>
+      <div class="pill">Q <span id="txNum">1</span>/<span id="txTotal">0</span></div>
+      <div class="pill">Acertos <span id="txScore">0</span></div>
+    </div>
+
+    <div class="grid two">
+      <div class="card">
+        <h3 id="txCase">Carregando…</h3>
+        <div id="txOptions" class="options" role="group" aria-label="Classificação de rejeição"></div>
+        <div id="txFeedback" class="feedback" aria-live="polite"></div>
+        <div class="actions">
+          <button id="txNext" class="ghost">Próxima</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3>Essência rápida</h3>
+        <ul class="howto">
+          <li><b>Hiperaguda</b> — minutos–horas: anticorpos pré-formados (ABO/anti-HLA), ativação do complemento → trombose, necrose hemorrágica.</li>
+          <li><b>Aguda</b> — dias–semanas (ou tardia): mediada por T (CD8/CD4) e/ou anticorpos de novo → endotelite, lesão tubular.</li>
+          <li><b>Crônica</b> — meses–anos: arteriopatia obliterante (fibrose íntima), atrofia intersticial, cicatriz funcional.</li>
+          <li><b>Prevenção</b>: crossmatch, tipagem HLA, imunossupressão (tacrolimo/ciclosporina + MMF + corticoide).</li>
+          <li><b>Resgate</b>: pulsoterapia, ATG; humoral: plasmaférese/IVIG/rituximabe.</li>
+        </ul>
+
+        <div class="actions" style="margin-top:8px">
+          <label style="display:inline-flex;align-items:center;gap:6px">
+            <input type="checkbox" id="txABO" /> ABO incompatível
+          </label>
+          <label style="display:inline-flex;align-items:center;gap:6px">
+            <input type="checkbox" id="txAntiHLA" /> Anti-HLA pré-formado
+          </label>
+          <button id="txSim">Simular crossmatch</button>
+        </div>
+        <p id="txRisk" class="muted">Crossmatch: —</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- Complemento -->
+<section id="comp" class="view" role="tabpanel">
+  <div class="head">
+    <h2>Complemento</h2>
+    <div class="pill"><span id="compScore">0</span> / <span id="compTotal">0</span></div>
+  </div>
+  <div class="grid three">
+    <div class="card">
+      <h3>Classifique componentes</h3>
+      <ul id="compItems" class="chips" aria-label="Componentes do complemento"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="clas" tabindex="0">
+      <h3>Via Clássica</h3>
+      <ul class="bucket" id="bucketClas"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="lect" tabindex="0">
+      <h3>Via da Lectina</h3>
+      <ul class="bucket" id="bucketLect"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="alt" tabindex="0">
+      <h3>Via Alternativa</h3>
+      <ul class="bucket" id="bucketAlt"></ul>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="compCheck">Conferir</button>
+    <button id="compReset" class="ghost">Reiniciar</button>
+  </div>
+</section>
+
+<!-- Citocinas / Th -->
+<section id="cyto" class="view" role="tabpanel">
+  <div class="head">
+    <h2>Citocinas &amp; Perfis Th</h2>
+    <div class="pill"><span id="cytoScore">0</span> / <span id="cytoTotal">0</span></div>
+  </div>
+  <div class="grid three">
+    <div class="card">
+      <h3>Arraste as citocinas</h3>
+      <ul id="cytoItems" class="chips" aria-label="Citocinas"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="th1" tabindex="0">
+      <h3>Th1</h3>
+      <ul class="bucket" id="bucketTh1"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="th2" tabindex="0">
+      <h3>Th2</h3>
+      <ul class="bucket" id="bucketTh2"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="th17" tabindex="0">
+      <h3>Th17</h3>
+      <ul class="bucket" id="bucketTh17"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="treg" tabindex="0">
+      <h3>Treg</h3>
+      <ul class="bucket" id="bucketTreg"></ul>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="cytoCheck">Conferir</button>
+    <button id="cytoReset" class="ghost">Reiniciar</button>
+  </div>
+</section>
+
+<!-- Ativação T -->
+<section id="tact" class="view" role="tabpanel">
+  <div class="head">
+    <h2>Ativação de Linfócito T (Sinais 1–3)</h2>
+    <div class="pill">Q <span id="tactNum">1</span>/<span id="tactTotal">0</span></div>
+    <div class="pill">Acertos <span id="tactScore">0</span></div>
+  </div>
+  <div class="card">
+    <h3 id="tactCase">Carregando…</h3>
+    <div id="tactOptions" class="options" role="group" aria-label="Classificação (Sinal 1/2/3 ou anergia)"></div>
+    <div id="tactFeedback" class="feedback" aria-live="polite"></div>
+    <div class="actions">
+      <button id="tactNext" class="ghost">Próxima</button>
+    </div>
+  </div>
+</section>
+
+<!-- Imunodeficiências -->
+<section id="pid" class="view" role="tabpanel">
+  <div class="head">
+    <h2>Imunodeficiências</h2>
+    <div class="pill"><span id="pidScore">0</span> / <span id="pidTotal">0</span></div>
+  </div>
+  <div class="grid three">
+    <div class="card">
+      <h3>Classifique os exemplos</h3>
+      <ul id="pidItems" class="chips" aria-label="Imunodeficiências"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="bcell" tabindex="0">
+      <h3>B/anticorpo</h3>
+      <ul class="bucket" id="bucketPidB"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="tcell" tabindex="0">
+      <h3>T/celular/SCID</h3>
+      <ul class="bucket" id="bucketPidT"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="phago" tabindex="0">
+      <h3>Fagocitária/adesão</h3>
+      <ul class="bucket" id="bucketPidFag"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="comp" tabindex="0">
+      <h3>Complemento</h3>
+      <ul class="bucket" id="bucketPidComp"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="sec" tabindex="0">
+      <h3>Secundária</h3>
+      <ul class="bucket" id="bucketPidSec"></ul>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="pidCheck">Conferir</button>
+    <button id="pidReset" class="ghost">Reiniciar</button>
+  </div>
+</section>
+
+<!-- Imunossupressores -->
+<section id="drugs" class="view" role="tabpanel">
+  <div class="head">
+    <h2>Imunossupressores</h2>
+    <div class="pill"><span id="drugsScore">0</span> / <span id="drugsTotal">0</span></div>
+  </div>
+  <div class="grid three">
+    <div class="card">
+      <h3>Associe fármaco → classe</h3>
+      <ul id="drugsItems" class="chips" aria-label="Imunossupressores"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="cni" tabindex="0">
+      <h3>Calcineurina (CNI)</h3>
+      <ul class="bucket" id="bucketCni"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="mtor" tabindex="0">
+      <h3>mTOR</h3>
+      <ul class="bucket" id="bucketMtor"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="antimeta" tabindex="0">
+      <h3>Antimetabólitos</h3>
+      <ul class="bucket" id="bucketAntiMeta"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="cort" tabindex="0">
+      <h3>Corticoides</h3>
+      <ul class="bucket" id="bucketCort"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="coest" tabindex="0">
+      <h3>Coestímulo (CTLA4-Ig)</h3>
+      <ul class="bucket" id="bucketCoest"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="antiCD20" tabindex="0">
+      <h3>Anti-CD20</h3>
+      <ul class="bucket" id="bucketAntiCD20"></ul>
+    </div>
+    <div class="card droptarget" data-bucket="antiTNF" tabindex="0">
+      <h3>Anti-TNF</h3>
+      <ul class="bucket" id="bucketAntiTNF"></ul>
+    </div>
+  </div>
+  <div class="actions">
+    <button id="drugsCheck">Conferir</button>
+    <button id="drugsReset" class="ghost">Reiniciar</button>
+  </div>
+</section>
+
+  <!-- Tumores -->
+  <section id="tumor" class="view" role="tabpanel">
+    <div class="head">
+      <h2>Imunologia dos Tumores</h2>
+    </div>
+    <div class="grid four" id="tumorGrid" aria-live="polite">
+      <!-- cartas geradas via JS -->
+    </div>
+  </section>
+</main>
+
+<footer class="footer">
+  <small>ImunoPlay — feito para estudo. Conteúdo educacional, não substitui orientação clínica.</small><br>
+  <small>Desenvolvido por <strong>Lucas Albuquerque</strong></small>
+</footer>
+<script>
+  if ('serviceWorker' in navigator) {
+    navigator.serviceWorker.register('sw.js');
+  }
+</script>
+<script src="app.js"></script>
+</body>
+</html>

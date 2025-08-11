@@ -1,0 +1,13 @@
+{
+  "name": "ImunoPlay — Aprenda Imunologia",
+  "short_name": "ImunoPlay",
+  "start_url": "./Index.html",
+  "display": "standalone",
+  "background_color": "#0f1221",
+  "theme_color": "#0f1221",
+  "description": "Flashcards, quizzes e simuladores para dominar Imuno.",
+  "icons": [
+    { "src": "icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "icons/icon-maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any maskable" }
+  ]
+}
